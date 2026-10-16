@@ -298,9 +298,15 @@
     .ledger-detail-scroll { border: 1px solid #d8d8d8; }
     .ledger-detail-table { min-width: 1020px; }
     .agreement-empty { margin: 16px 0; color: #777; text-align: center; }
-    .departure-fields { display: grid; grid-template-columns: 130px 1fr; gap: 18px 12px; margin: 8px 0; }
-    .departure-fields dt { color: #777; }
-    .departure-fields dd { margin: 0; font-variant-numeric: tabular-nums; }
+    .departure-fields { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 18px 12px; margin: 8px 0; }
+    .departure-fields dt { padding-top: 6px; color: #777; }
+    .departure-fields dd { min-width: 0; margin: 0; font-variant-numeric: tabular-nums; }
+    .departure-date { display: inline-block; padding-top: 6px; }
+    .departure-input { width: 100%; padding: 6px 8px; border: 1px solid #c8c8c8; border-radius: 3px; background: #fff; color: #333; font: inherit; }
+    input.departure-input { height: 32px; text-align: right; font-variant-numeric: tabular-nums; }
+    textarea.departure-input { display: block; min-height: 90px; resize: vertical; line-height: 20px; }
+    .departure-input:focus { outline: 2px solid #eaf0fa; border-color: #8ba0c5; }
+    .departure-input:invalid { border-color: #d45050; }
     .tax-editor-note { margin: 0 0 12px; color: #777; line-height: 20px; }
     .tax-editor-scroll { max-height: min(600px, calc(100dvh - 250px)); overflow: auto; border: 1px solid #d8d8d8; }
     .tax-editor-table { min-width: 0; }
@@ -309,7 +315,7 @@
     .tax-amount-input { width: 100%; height: 28px; padding: 4px 8px; border: 1px solid #c8c8c8; border-radius: 3px; background: #fff; text-align: right; font-variant-numeric: tabular-nums; }
     .tax-amount-input:focus { outline: 2px solid #eaf0fa; border-color: #8ba0c5; }
     .tax-amount-input:invalid { border-color: #d45050; }
-    .tax-editor-error { margin: 10px 0 0; color: #b73535; line-height: 20px; }
+    .tax-editor-error, .departure-editor-error { margin: 10px 0 0; color: #b73535; line-height: 20px; }
     .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
     .dialog-button { min-width: 64px; height: 30px; padding: 0 14px; border: 1px solid #c8c8c8; border-radius: 3px; background: #fff; color: #555; }
     .dialog-button.primary { border-color: #6c86cf; background: #6c86cf; color: #fff; }
@@ -473,6 +479,23 @@
     </form>
   </template>
 
+  <template id="departure-editor-template">
+    <form class="departure-editor-form" novalidate>
+      <dl class="departure-fields">
+        <dt>离职日期</dt><dd><span class="departure-date"></span></dd>
+        <dt><label for="departure-return-amount">离职返还金额</label></dt>
+        <dd><input class="departure-input" id="departure-return-amount" name="departureReturn" type="text" inputmode="decimal" autocomplete="off" required></dd>
+        <dt><label for="departure-remark">备注</label></dt>
+        <dd><textarea class="departure-input" id="departure-remark" name="departureRemark" rows="3"></textarea></dd>
+      </dl>
+      <p class="departure-editor-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="dialog-button departure-editor-cancel" type="button">取消</button>
+        <button class="dialog-button primary" type="submit">保存</button>
+      </div>
+    </form>
+  </template>
+
   <script>
     (() => {
       // 页面示例数据，尚未提供的金额字段保留空值。
@@ -599,6 +622,71 @@
         const cents = (Number(whole) * 100 + Number(fraction.padEnd(2, '0'))) * (text.startsWith('-') ? -1 : 1);
         if (!Number.isSafeInteger(cents)) throw new Error('金额超出可保存范围，请重新填写。');
         return cents;
+      }
+
+      function departureStorageKey(record) {
+        return `signing-bonus-ledger:departure:v1:${record.employeeId}:${record.departureDate}`;
+      }
+
+      function loadDepartureDetails(record) {
+        if (!record.departureDate) return;
+        record.departureRemark = '';
+        try {
+          const saved = JSON.parse(localStorage.getItem(departureStorageKey(record)));
+          if (!saved || !Number.isSafeInteger(saved.amountCents) || saved.amountCents < 0 || typeof saved.remark !== 'string') return;
+          record.departureReturn = saved.amountCents / 100;
+          record.departureRemark = saved.remark;
+        } catch {
+          // 无有效的已保存信息时，保留原有离职返还金额。
+        }
+      }
+
+      function renderDepartureEditor(record) {
+        const fragment = document.getElementById('departure-editor-template').content.cloneNode(true);
+        const form = fragment.querySelector('form');
+        const amountInput = form.querySelector('[name="departureReturn"]');
+        const remarkInput = form.querySelector('[name="departureRemark"]');
+        const errorMessage = form.querySelector('.departure-editor-error');
+        form.querySelector('.departure-date').textContent = formatValue(record, 'departureDate');
+        amountInput.value = Number.isFinite(record.departureReturn) ? record.departureReturn.toFixed(2) : '';
+        remarkInput.value = record.departureRemark;
+        form.addEventListener('input', () => {
+          amountInput.setCustomValidity('');
+          amountInput.removeAttribute('aria-invalid');
+          errorMessage.hidden = true;
+        });
+        form.querySelector('.departure-editor-cancel').addEventListener('click', () => dialog.close());
+        form.addEventListener('submit', event => {
+          event.preventDefault();
+          errorMessage.hidden = true;
+          let amountCents;
+          try {
+            amountCents = parseTaxAmount(amountInput.value);
+            if (amountCents === null) throw new Error('请填写离职返还金额。');
+            if (amountCents < 0) throw new Error('离职返还金额不能为负数。');
+          } catch (error) {
+            errorMessage.textContent = error.message;
+            errorMessage.hidden = false;
+            amountInput.setCustomValidity(error.message);
+            amountInput.setAttribute('aria-invalid', 'true');
+            amountInput.focus();
+            return;
+          }
+          const remark = remarkInput.value;
+          try {
+            localStorage.setItem(departureStorageKey(record), JSON.stringify({ amountCents, remark }));
+          } catch {
+            errorMessage.textContent = '保存失败，浏览器无法保存数据。请稍后重试。';
+            errorMessage.hidden = false;
+            return;
+          }
+          record.departureReturn = amountCents / 100;
+          record.departureRemark = remark;
+          dialog.close();
+          document.getElementById('result-announcement').textContent = '离职返还信息已保存';
+          body.querySelector(`[data-action="departure-details"][data-record-id="${record.id}"]`)?.focus();
+        });
+        return fragment;
       }
 
       function renderTaxEditor(record) {
@@ -795,16 +883,7 @@
           content.append(renderLedgerDetails(record));
         } else if (action === 'departure-details') {
           document.getElementById('dialog-title').textContent = `离职返还 · ${record.name}（${record.employeeId}）`;
-          const fields = document.createElement('dl');
-          fields.className = 'departure-fields';
-          [['departureDate', '离职日期'], ['departureReturn', '离职返还金额']].forEach(([key, label]) => {
-            const term = document.createElement('dt');
-            term.textContent = label;
-            const value = document.createElement('dd');
-            value.textContent = formatValue(record, key);
-            fields.append(term, value);
-          });
-          content.append(fields);
+          content.append(renderDepartureEditor(record));
         } else {
           document.getElementById('dialog-title').textContent = '查看协议';
           const message = document.createElement('p');
@@ -836,6 +915,7 @@
       });
 
       records.forEach(loadTaxEntries);
+      records.forEach(loadDepartureDetails);
       renderRows();
     })();
   </script>
