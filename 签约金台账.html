@@ -675,13 +675,23 @@
       function renderLedgerDetails(record) {
         const fragment = document.getElementById('ledger-detail-template').content.cloneNode(true);
         const detailBody = fragment.querySelector('.ledger-detail-body');
-        record.ledgerEntries.forEach(entry => {
+        const entries = record.ledgerEntries.slice();
+        if (Number.isFinite(record.prepaid)) {
+          const period = record.period.match(/^(\d{4})年(\d{1,2})月$/);
+          entries.unshift({
+            isPrepayment: true,
+            payrollPeriod: period ? `${period[1]}M${Number(period[2])}` : record.period,
+            grossBonus: null,
+            bonusDeduction: null
+          });
+        }
+        entries.forEach(entry => {
           const row = document.createElement('tr');
-          const taxCents = record.taxEntries.find(tax => tax.payrollPeriod === entry.payrollPeriod)?.taxCents ?? null;
+          const taxCents = entry.isPrepayment ? null : record.taxEntries.find(tax => tax.payrollPeriod === entry.payrollPeriod)?.taxCents ?? null;
           const values = {
             ...entry,
             bonusTax: taxCents === null ? null : taxCents / 100,
-            netBonus: taxCents === null ? null : (Math.round(entry.grossBonus * 100) - taxCents) / 100,
+            netBonus: entry.isPrepayment ? record.prepaid : taxCents === null ? null : (Math.round(entry.grossBonus * 100) - taxCents) / 100,
             employeeId: record.employeeId,
             name: record.name,
             entryDate: record.entryDate,
@@ -692,11 +702,14 @@
             cell.textContent = formatValue(values, key);
             cell.className = moneyFields.has(key) ? 'amount' : key === 'department' ? 'department' : 'nowrap';
             if (key === 'department') renderDepartment(cell, formatValue(values, key));
+            if (key === 'payrollPeriod' && entry.isPrepayment) {
+              cell.append(document.createElement('br'), document.createTextNode('预发放'));
+            }
             row.append(cell);
           });
           detailBody.append(row);
         });
-        if (!record.ledgerEntries.length) {
+        if (!entries.length) {
           const row = document.createElement('tr');
           const cell = document.createElement('td');
           cell.colSpan = detailFields.length;
