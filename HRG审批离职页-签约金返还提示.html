@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HRG审批离职页 · 签约金返还提示</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #111; background: #fff; font: 14px Arial, "Microsoft YaHei", sans-serif; }
+    button, input, select { font: inherit; }
+    button, a { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #236dac; outline-offset: 3px; }
+    .page { min-height: 100vh; border: 1px solid #777; border-radius: 3px; overflow: hidden; }
+    .page-title { position: relative; height: 48px; margin: 0; display: flex; align-items: center; justify-content: center; color: #aa5700; background: #f5f5f5; border-bottom: 1px solid #ccc; font-size: 19px; font-weight: 700; }
+    .page-content { padding: 69px 37px 32px; }
+    .section-title { margin: 0 0 14px; padding: 9px 14px 8px; border-bottom: 1px solid #bdbdbd; font-size: 14px; font-weight: 700; }
+    .columns { display: grid; grid-template-columns: 1fr 1fr; }
+    .field { display: grid; grid-template-columns: 194px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 30px; }
+    .field > label { color: #666; font-weight: 600; text-align: right; }
+    .field input, .field select { height: 30px; width: 215px; max-width: 100%; padding: 4px; border: 1px solid #bcbcbc; border-radius: 2px; color: #111; background: #fff; box-shadow: inset 0 1px 4px rgb(0 0 0 / 9%); }
+    .field input:disabled { color: #707070; background: #ededed; border-color: #d4d4d4; box-shadow: none; opacity: 1; }
+    .field input.narrow { width: 189px; }
+    .field select { width: 259px; }
+    .field input[type="date"] { font-family: Arial, sans-serif; }
+    .salary .field { grid-template-columns: 202px minmax(0, 1fr); }
+    .salary .field input { width: 199px; }
+    .salary .right .field { grid-template-columns: 181px minmax(0, 1fr); }
+    .salary .right .field input { width: 184px; }
+    .hrg { margin-top: 24px; }
+    .hrg .section-title { padding-left: 0; margin-bottom: 14px; }
+    .field-list { display: grid; gap: 9px; }
+    .left .field-list .field:nth-child(4) { margin-top: 8px; }
+    .right .field { grid-template-columns: 188px minmax(0, 1fr); }
+    .right .field-list .field:nth-child(3) { margin-top: 10px; }
+    .right .field input { width: 215px; }
+    .right .field input:disabled { width: 189px; }
+    .agreements-left { margin: 32px 0 0 206px; }
+    .checkbox-label { display: flex; align-items: center; gap: 7px; color: #666; font-weight: 600; min-height: 25px; }
+    .checkbox-label input { width: 13px; height: 13px; margin: 0; accent-color: #767676; }
+    .checkbox-label input:disabled { opacity: .7; }
+    .competition { margin-top: 8px; }
+    .competition-fields { display: grid; gap: 8px; margin-top: 2px; }
+    .competition-fields input { width: 186px; }
+    .agreements-right { margin: 83px 0 0 200px; max-width: 350px; }
+    .signing-row { display: flex; align-items: center; flex-wrap: wrap; gap: 17px; min-height: 25px; }
+    .agreement-link { color: #1d68a3; font-size: 14px; text-decoration: none; white-space: nowrap; }
+    .agreement-link:hover { text-decoration: underline; }
+    .return-notice { margin-top: 7px; padding: 10px 12px; border: 1px solid #e8c68b; border-radius: 2px; background: #fff8eb; color: #8f4c09; line-height: 1.5; }
+    .notice-title { display: flex; gap: 8px; align-items: center; font-weight: 700; }
+    .notice-symbol { width: 15px; height: 15px; display: inline-flex; align-items: center; justify-content: center; border: 1.5px solid #a35c12; border-radius: 50%; font: bold 11px Arial, sans-serif; flex-shrink: 0; }
+    .return-notice p { margin: 3px 0 0 23px; font-size: 13px; }
+    .training { margin-top: 9px; }
+    .total { margin-top: 22px; }
+    .vacation { margin: 41px 27px 0; }
+    .vacation h2 { font-size: 16px; color: #ad5a08; margin: 0 0 3px; }
+    .vacation-box { border: 1px solid #ccc; padding: 27px 0 16px; }
+    .vacation-heading { margin: 0 0 4px 230px; font-weight: 700; }
+    .vacation .right .vacation-heading { margin-left: 219px; }
+    .vacation .field { grid-template-columns: 171px minmax(0, 1fr); margin-top: 8px; }
+    .vacation .right .field { grid-template-columns: 177px minmax(0, 1fr); }
+    .vacation .right .field input { grid-column: 2; }
+    .vacation .field input { width: 189px; }
+    dialog { width: min(460px, calc(100vw - 32px)); padding: 0; border: 1px solid #bcbcbc; border-radius: 4px; color: #333; box-shadow: 0 10px 35px rgb(0 0 0 / 20%); }
+    dialog::backdrop { background: rgb(0 0 0 / 32%); }
+    .dialog-title { display: flex; align-items: center; justify-content: space-between; background: #f5f5f5; border-bottom: 1px solid #ddd; padding: 14px 18px; }
+    .dialog-title h2 { font-size: 16px; margin: 0; }
+    .dialog-close { border: 0; background: none; color: #666; padding: 2px 6px; font-size: 20px; }
+    .dialog-body { padding: 24px 18px; line-height: 1.7; }
+    .dialog-body p { margin: 0 0 5px; }
+    .dialog-body p + p { font-size: 13px; color: #666; }
+    .dialog-actions { padding: 0 18px 16px; text-align: right; }
+    .dialog-confirm { border: 1px solid #bcbcbc; border-radius: 2px; background: #f5f5f5; padding: 6px 19px; }
+    [hidden] { display: none !important; }
+    @media (max-width: 900px) {
+      .page-content { padding: 26px 18px; }
+      .columns { grid-template-columns: 1fr; gap: 22px; }
+      .field, .salary .field, .salary .right .field, .right .field { grid-template-columns: 180px minmax(0, 1fr); }
+      .agreements-left, .agreements-right { margin-left: 192px; }
+      .agreements-right { margin-top: 24px; max-width: 350px; }
+      .vacation { margin: 28px 0 0; }
+      .vacation-heading, .vacation .right .vacation-heading { margin-left: 192px; }
+      .vacation .field, .vacation .right .field { grid-template-columns: 180px minmax(0, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .page-title { font-size: 17px; }
+      .page-content { padding: 24px 14px; }
+      .field, .salary .field, .salary .right .field, .right .field, .vacation .field, .vacation .right .field { grid-template-columns: 132px minmax(0, 1fr); gap: 8px; }
+      .field > label { font-size: 12px; }
+      .field input, .field select { width: 100%; min-width: 0; }
+      .agreements-left, .agreements-right { margin-left: 140px; }
+      .agreements-right { margin-left: 0; }
+      .signing-row { gap: 12px; }
+      .return-notice p { font-size: 13px; }
+      .vacation-heading, .vacation .right .vacation-heading { margin-left: 140px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1 class="page-title">审批离职流程</h1>
+    <div class="page-content">
+      <section class="salary" aria-labelledby="salary-title">
+        <h2 class="section-title" id="salary-title">薪酬信息</h2>
+        <div class="columns">
+          <div class="left"><div class="field"><label for="monthly-salary">月薪:</label><input id="monthly-salary" value="5880.00" disabled></div></div>
+          <div class="right"><div class="field"><label for="job-level">职级:</label><input id="job-level" value="" disabled></div></div>
+        </div>
+      </section>
+      <section class="hrg" aria-labelledby="hrg-title">
+        <h2 class="section-title" id="hrg-title">HRG确认离职信息</h2>
+        <div class="columns">
+          <div class="left">
+            <div class="field-list">
+              <div class="field"><label for="salary-end-date">离职日期-算薪(*):</label><input id="salary-end-date" type="date" value="2026-09-01"></div>
+              <div class="field"><label for="compensation">补偿金金额:</label><input class="narrow" id="compensation" value="0.00" inputmode="decimal"></div>
+              <div class="field"><label for="next-company">HRG确认下家单位:</label><input class="narrow" id="next-company"></div>
+              <div class="field"><label for="next-salary">HRG确认下家薪资:</label><input class="narrow" id="next-salary" value="0.00" inputmode="decimal"></div>
+              <div class="field"><label for="annual-salary">年薪:</label><input class="narrow" id="annual-salary" value="0.00" inputmode="decimal"></div>
+            </div>
+            <div class="agreements-left">
+              <label class="checkbox-label"><input type="checkbox" disabled><span>落户协议</span></label>
+              <label class="checkbox-label competition"><input type="checkbox" id="competition"><span>是否启动竞业限制</span></label>
+            </div>
+            <div class="competition-fields">
+              <div class="field"><label for="competition-months">期限(月):</label><input id="competition-months" value="0" disabled></div>
+              <div class="field"><label for="competition-payment">月支付:</label><input id="competition-payment" value="0.00" disabled></div>
+            </div>
+          </div>
+          <div class="right">
+            <div class="field-list">
+              <div class="field"><label for="effective-date">离职生效日期-系统:</label><input id="effective-date" value="2026/09/02" disabled></div>
+              <div class="field"><label for="last-on-duty">最后在岗日(*):</label><input id="last-on-duty" type="date" value="2026-09-01"></div>
+              <div class="field"><label for="departure-reason">离职原因(*):</label><select id="departure-reason"><option value=""></option><option>个人原因</option><option>职业发展</option></select></div>
+              <div class="field"><label for="handover-location">交接地点:</label><select id="handover-location"><option>ABJ1-望京完美世界大厦</option></select></div>
+            </div>
+            <div class="agreements-right">
+              <div class="signing-row">
+                <label class="checkbox-label"><input id="signing-bonus-agreement" type="checkbox" checked disabled><span>签约金协议</span></label>
+                <a class="agreement-link" id="view-signing-agreement" href="#signing-agreement-dialog" aria-haspopup="dialog">查看签约金协议</a>
+              </div>
+              <div class="return-notice" id="signing-bonus-return-notice" role="note" aria-label="签约金返还提示">
+                <div class="notice-title"><span class="notice-symbol" aria-hidden="true">!</span><span>需返还签约金</span></div>
+                <p>具体返还金额请联系 SSC 测算。</p>
+              </div>
+              <label class="checkbox-label training"><input type="checkbox" disabled><span>培训协议</span></label>
+            </div>
+            <div class="field total"><label for="training-total">总金额:</label><input id="training-total" value="0.00" disabled></div>
+          </div>
+        </div>
+      </section>
+      <section class="vacation" aria-labelledby="vacation-title">
+        <h2 id="vacation-title">离职假期折算情况</h2>
+        <div class="vacation-box columns">
+          <div class="left">
+            <div class="vacation-heading">离职前</div>
+            <div class="field"><label for="prior-vacation-before">上年工龄假(天):</label><input id="prior-vacation-before" value="0.0" disabled></div>
+            <div class="field"><label for="current-vacation-before">今年工龄假(天):</label><input id="current-vacation-before" value="0.0" disabled></div>
+          </div>
+          <div class="right">
+            <div class="vacation-heading">离职日期折算后</div>
+            <div class="field"><label class="sr-only" for="prior-vacation-after" hidden>折算后上年工龄假(天):</label><input id="prior-vacation-after" value="0.0" disabled></div>
+            <div class="field"><label class="sr-only" for="current-vacation-after" hidden>折算后今年工龄假(天):</label><input id="current-vacation-after" value="0.0" disabled></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <dialog id="signing-agreement-dialog" aria-labelledby="signing-dialog-title" aria-describedby="signing-dialog-description">
+    <div class="dialog-title"><h2 id="signing-dialog-title">签约金协议</h2><button type="button" class="dialog-close" aria-label="关闭">×</button></div>
+    <div class="dialog-body" id="signing-dialog-description"><p>暂未获取签约金协议附件。</p><p>请联系 SSC 获取该员工的签约金协议。</p></div>
+    <div class="dialog-actions"><button type="button" class="dialog-confirm">我知道了</button></div>
+  </dialog>
+  <script>
+    (() => {
+      const signingCheckbox = document.getElementById('signing-bonus-agreement');
+      const agreementLink = document.getElementById('view-signing-agreement');
+      const returnNotice = document.getElementById('signing-bonus-return-notice');
+      const agreementDialog = document.getElementById('signing-agreement-dialog');
+
+      // 展示“已签约且需返还”的示例场景；正式页面由业务数据提供判定结果和附件地址。
+      let signingBonus = { hasAgreement: true, requiresReturn: true, agreementUrl: '' };
+
+      function validAgreementUrl(value) {
+        if (!value) return '';
+        try {
+          const url = new URL(value, document.baseURI);
+          return ['https:', 'http:', 'file:', 'blob:'].includes(url.protocol) ? url.href : '';
+        } catch { return ''; }
+      }
+
+      function setSigningBonus(data) {
+        signingBonus = {
+          hasAgreement: Boolean(data.hasAgreement),
+          requiresReturn: Boolean(data.requiresReturn),
+          agreementUrl: validAgreementUrl(data.agreementUrl)
+        };
+        signingCheckbox.checked = signingBonus.hasAgreement;
+        agreementLink.hidden = !signingBonus.hasAgreement;
+        returnNotice.hidden = !(signingBonus.hasAgreement && signingBonus.requiresReturn);
+        agreementLink.href = signingBonus.agreementUrl || '#signing-agreement-dialog';
+        if (signingBonus.agreementUrl) {
+          agreementLink.target = '_blank';
+          agreementLink.rel = 'noopener noreferrer';
+          agreementLink.removeAttribute('aria-haspopup');
+        } else {
+          agreementLink.removeAttribute('target');
+          agreementLink.removeAttribute('rel');
+          agreementLink.setAttribute('aria-haspopup', 'dialog');
+        }
+      }
+
+      agreementLink.addEventListener('click', (event) => {
+        if (signingBonus.agreementUrl) return;
+        event.preventDefault();
+        agreementDialog.showModal();
+      });
+      for (const button of agreementDialog.querySelectorAll('button')) {
+        button.addEventListener('click', () => agreementDialog.close());
+      }
+      agreementDialog.addEventListener('click', (event) => {
+        const box = agreementDialog.getBoundingClientRect();
+        if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) agreementDialog.close();
+      });
+      window.hrgDeparturePage = Object.freeze({ setSigningBonus });
+      setSigningBonus(signingBonus);
+    })();
+  </script>
+</body>
+</html>

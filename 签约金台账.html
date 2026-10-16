@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>签约金台账</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --sidebar-width: 180px;
+      --header-height: 64px;
+      --accent: #ff675f;
+      --page-background: #eff0f1;
+      --navigation-color: #4f607e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: #151515;
+      background: var(--page-background);
+      font: 13px "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; }
+    button:focus-visible, a:focus-visible, select:focus-visible {
+      outline: 2px solid #6482bd;
+      outline-offset: 3px;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .icon { width: 18px; height: 18px; flex: none; fill: currentColor; }
+    .topbar {
+      height: var(--header-height);
+      display: flex;
+      align-items: stretch;
+      background: #fff;
+      border-bottom: 1px solid #e9e9e9;
+    }
+    .brand-space { width: var(--sidebar-width); flex: none; }
+    .top-tab {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      min-width: 132px;
+      padding: 0 14px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #555;
+      white-space: nowrap;
+    }
+    .top-tab.current { min-width: 132px; color: #fff; background: #ffa398; }
+    .account-area {
+      margin-left: auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #808080;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .account-spacer {
+      display: inline-block;
+      width: 110px;
+      height: 20px;
+    }
+    .account-name { min-width: 120px; text-align: right; }
+    .name-spacer {
+      display: inline-block;
+      width: 62px;
+      height: 18px;
+      margin: 0 3px;
+      vertical-align: middle;
+    }
+    .old-version {
+      margin-left: 28px;
+      height: 30px;
+      padding: 0 12px;
+      border: 1px solid #ff827c;
+      border-radius: 24px;
+      background: #fff;
+      color: var(--accent);
+      font-size: 13px;
+      opacity: 1;
+      white-space: nowrap;
+    }
+    .sidebar {
+      position: fixed;
+      inset: var(--header-height) auto 0 0;
+      width: var(--sidebar-width);
+      padding-top: 10px;
+      overflow-y: auto;
+      background: #fff;
+      border-right: 1px solid #e7e8e9;
+      scrollbar-width: thin;
+    }
+    .menu { margin: 0; padding: 0; list-style: none; }
+    .menu-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 60px;
+      padding: 0 12px;
+      gap: 12px;
+      color: #555;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .menu-row .icon { color: var(--navigation-color); }
+    .menu-label { position: relative; }
+    .notification {
+      position: absolute;
+      top: -2px;
+      right: -10px;
+      width: 5px;
+      height: 5px;
+      background: #fa4942;
+      border-radius: 50%;
+    }
+    .menu-row.active, .menu-row.active .icon { color: #ff6058; }
+    .menu-row.active::after {
+      content: "";
+      position: absolute;
+      top: 10px;
+      bottom: 10px;
+      right: 0;
+      width: 3px;
+      border-radius: 4px;
+      background: #ff675f;
+    }
+    .submenu {
+      display: flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 0 12px 0 42px;
+      color: #ff756e;
+      font-size: 13px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .workspace {
+      margin-left: var(--sidebar-width);
+      min-height: calc(100vh - var(--header-height));
+      padding: 36px 24px 48px;
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 20px;
+      margin-bottom: 14px;
+      color: #8a8e93;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .breadcrumb .separator { color: #d7d8da; }
+    .breadcrumb .current { color: #ff776f; }
+    .ledger-panel { min-height: 560px; padding-top: 20px; background: #fff; }
+    .list-region { margin: 0 5px; }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      height: 36px;
+      margin: 0;
+      padding: 0 24px;
+      border-bottom: 1px solid #c7c7c7;
+      color: #6b6b6b;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .search-form {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      gap: 10px;
+      height: 60px;
+      margin: 0;
+      padding: 10px 20px 0 12px;
+    }
+    .search-form label { padding-top: 7px; color: #747474; font-weight: 700; }
+    .name-input {
+      width: 140px;
+      height: 28px;
+      margin-top: 1px;
+      padding: 4px 7px;
+      border: 1px solid #c8c8c8;
+      border-radius: 4px;
+      outline: none;
+      background: #fff;
+      box-shadow: inset 3px 3px 8px #00000012;
+    }
+    .name-input:focus { border-color: #8ba0c5; box-shadow: 0 0 0 2px #eaf0fa; }
+    .search-button {
+      width: 72px;
+      height: 30px;
+      margin-left: 24px;
+      border: 1px solid #b4b4b4;
+      border-radius: 6px;
+      color: #050505;
+      background: linear-gradient(#fff 2%, #f4f4f4 36%, #dedede 100%);
+      box-shadow: 1px 2px 3px #0004, inset 1px 1px 3px #fff;
+      font-weight: 700;
+    }
+    .search-button:active { background: linear-gradient(#ddd, #f7f7f7); box-shadow: inset 1px 2px 4px #0002; }
+    .grid { border: 1px solid #d8d8d8; }
+    .grid-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 44px;
+      padding: 0 16px;
+    }
+    .export-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 26px;
+      border: 0;
+      padding: 0;
+      color: #6b6b6b;
+      background: transparent;
+    }
+    .export-button .icon { width: 18px; height: 18px; }
+    .export-button:disabled { opacity: .4; }
+    .pager { display: flex; align-items: center; gap: 10px; }
+    .pager-button { width: 24px; height: 26px; padding: 4px; border: 0; color: #d0d0d0; background: transparent; }
+    .pager-button .icon { width: 16px; height: 16px; }
+    .pager-button.next .icon, .pager-button.last .icon { transform: rotate(180deg); }
+    .page-range {
+      width: 74px;
+      height: 28px;
+      padding: 0 6px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      color: #999;
+      background: #f1f1f1;
+      font-size: 12px;
+      opacity: 1;
+    }
+    .table-scroll { max-width: 100%; overflow-x: auto; scrollbar-width: thin; scrollbar-color: #c3c3c3 #f5f5f5; }
+    .ledger-table { width: 100%; min-width: 1194px; border-collapse: collapse; table-layout: fixed; }
+    .ledger-table th {
+      height: 44px;
+      padding: 5px 6px;
+      background: #efefef;
+      color: #090909;
+      font-size: 12px;
+      line-height: 17px;
+      font-weight: 700;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .ledger-table .tax-note { display: inline; }
+    .ledger-table td { height: 50px; padding: 7px 6px; line-height: 18px; vertical-align: middle; overflow-wrap: break-word; }
+    .ledger-table tbody tr:nth-child(even) { background: #fafafa; }
+    .ledger-table tbody tr:nth-child(odd) { background: #fff; }
+    .ledger-table .nowrap { white-space: nowrap; }
+    .ledger-table .department { text-align: left; }
+    .department-level { white-space: nowrap; }
+    .ledger-table .amount { text-align: right; padding-right: 10px; font-variant-numeric: tabular-nums; }
+    .ledger-table .payout-schedule { text-align: left; white-space: nowrap; }
+    .ledger-table .action-cell { padding-top: 6px; padding-bottom: 6px; }
+    .detail-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+    .table-action {
+      display: block;
+      width: fit-content;
+      padding: 0;
+      border: 0;
+      color: #6c86cf;
+      background: transparent;
+      line-height: 18px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .table-action:hover { text-decoration: underline; }
+    .amount .tax-edit-action { margin-left: auto; text-align: right; font-variant-numeric: tabular-nums; }
+    .ledger-table .empty-state { height: 96px; color: #939393; text-align: center; }
+    .bottom-rule { margin: 10px 0 0; border: 0; border-top: 1px solid #cbcbcb; }
+    .record-dialog { width: min(560px, calc(100vw - 40px)); padding: 0; border: 1px solid #d6d6d6; border-radius: 3px; color: #333; box-shadow: 0 12px 40px #0003; }
+    .record-dialog::backdrop { background: #0005; }
+    .dialog-heading { display: flex; align-items: center; justify-content: space-between; margin: 0; padding: 14px 18px; border-bottom: 1px solid #e4e4e4; font-size: 14px; font-weight: 700; }
+    .dialog-close { padding: 0 4px; border: 0; color: #888; background: none; font-size: 20px; font-weight: 400; line-height: 20px; }
+    .dialog-body { padding: 18px; }
+    .record-dialog.ledger-detail-dialog { width: min(1120px, calc(100vw - 40px)); }
+    .ledger-detail-scroll { border: 1px solid #d8d8d8; }
+    .ledger-detail-table { min-width: 1020px; }
+    .agreement-empty { margin: 16px 0; color: #777; text-align: center; }
+    .departure-fields { display: grid; grid-template-columns: 130px 1fr; gap: 18px 12px; margin: 8px 0; }
+    .departure-fields dt { color: #777; }
+    .departure-fields dd { margin: 0; font-variant-numeric: tabular-nums; }
+    .tax-editor-note { margin: 0 0 12px; color: #777; line-height: 20px; }
+    .tax-editor-scroll { max-height: min(600px, calc(100dvh - 250px)); overflow: auto; border: 1px solid #d8d8d8; }
+    .tax-editor-table { min-width: 0; }
+    .tax-editor-table th { position: sticky; top: 0; z-index: 1; height: 38px; padding: 5px 10px; }
+    .tax-editor-table td { height: 38px; padding: 4px 10px; border-bottom: 1px solid #eee; }
+    .tax-amount-input { width: 100%; height: 28px; padding: 4px 8px; border: 1px solid #c8c8c8; border-radius: 3px; background: #fff; text-align: right; font-variant-numeric: tabular-nums; }
+    .tax-amount-input:focus { outline: 2px solid #eaf0fa; border-color: #8ba0c5; }
+    .tax-amount-input:invalid { border-color: #d45050; }
+    .tax-editor-error { margin: 10px 0 0; color: #b73535; line-height: 20px; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+    .dialog-button { min-width: 64px; height: 30px; padding: 0 14px; border: 1px solid #c8c8c8; border-radius: 3px; background: #fff; color: #555; }
+    .dialog-button.primary { border-color: #6c86cf; background: #6c86cf; color: #fff; }
+    @media (max-width: 1100px) {
+      .account-spacer { display: none; }
+      .old-version { margin-left: 8px; }
+      .workspace { padding-left: 16px; padding-right: 16px; }
+    }
+    @media (max-width: 760px) {
+      :root { --sidebar-width: 148px; --header-height: 56px; }
+      .top-tab { min-width: 108px; padding: 0 10px; font-size: 13px; }
+      .top-tab.current { min-width: 120px; }
+      .account-area { display: none; }
+      .menu-row { height: 52px; gap: 10px; font-size: 13px; }
+      .submenu { padding-left: 40px; }
+      .workspace { padding: 24px 14px; }
+      .breadcrumb { gap: 6px; font-size: 12px; }
+      .list-region { margin: 0 4px; }
+      .section-heading { padding-left: 16px; }
+      .search-form { gap: 6px; padding-right: 10px; padding-left: 10px; }
+      .name-input { width: 96px; }
+      .search-button { width: 56px; margin-left: 4px; }
+      .grid-toolbar { padding: 0 8px; }
+      .pager { gap: 4px; }
+      .pager-button { width: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute;overflow:hidden">
+    <defs>
+      <symbol id="folder" viewBox="0 0 24 24"><path d="M2 3h7l3 3h9a2 2 0 0 1 2 2v2H1V5a2 2 0 0 1 1-2Zm-1 9h22v10H1Z"/></symbol>
+      <symbol id="folder-open" viewBox="0 0 24 24"><path d="M2 3h7l3 3h9a2 2 0 0 1 2 2v2H7a3 3 0 0 0-2.7 1.7L1 19V5a2 2 0 0 1 1-2Zm5 9h17l-5 10H2Z"/></symbol>
+      <symbol id="export-grid" viewBox="0 0 24 24"><path d="M2 3h21v4H2Zm0 5h15v1H3v4h14v1H3v4h14v1H2Zm5 0h1v11H7Zm6 0h1v11h-1Z"/><path d="M18 9h2v5h4l-5 7-5-7h4Z"/></symbol>
+      <symbol id="previous" viewBox="0 0 24 24"><path d="M16 3 6 12l10 9Z"/></symbol>
+      <symbol id="first" viewBox="0 0 24 24"><path d="M3 3h1.5v18H3ZM20 3 7 12l13 9Z"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="topbar">
+    <div class="brand-space" aria-hidden="true"></div>
+    <div class="top-tab current">HR便捷工作台</div>
+    <div class="top-tab">HR小姐姐</div>
+    <div class="account-area">
+      <span class="account-spacer" aria-hidden="true"></span>
+      <span class="account-name">xxx<span class="name-spacer" aria-hidden="true"></span>55</span>
+      <button class="old-version" type="button" disabled>切换旧版</button>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <nav aria-label="主导航">
+      <ul class="menu">
+        <li><div class="menu-row"><svg class="icon" aria-hidden="true"><use href="#folder"/></svg><span>员工自助</span></div></li>
+        <li><div class="menu-row"><svg class="icon" aria-hidden="true"><use href="#folder"/></svg><span>经理自助</span></div></li>
+        <li><div class="menu-row"><svg class="icon" aria-hidden="true"><use href="#folder"/></svg><span class="menu-label">流程审批<i class="notification" aria-hidden="true"></i></span></div></li>
+        <li><div class="menu-row"><svg class="icon" aria-hidden="true"><use href="#folder"/></svg><span class="menu-label">HRG自助<i class="notification" aria-hidden="true"></i></span></div></li>
+        <li><div class="menu-row"><svg class="icon" aria-hidden="true"><use href="#folder"/></svg><span class="menu-label">SSC<i class="notification" aria-hidden="true"></i></span></div></li>
+        <li>
+          <div class="menu-row active"><svg class="icon" aria-hidden="true"><use href="#folder-open"/></svg><span>签约金管理</span></div>
+          <a class="submenu" href="./签约金台账.html" aria-current="page">签约金台账</a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="workspace">
+    <h1 class="sr-only">签约金台账</h1>
+    <nav class="breadcrumb" aria-label="面包屑导航">
+      <span>首页</span><span class="separator" aria-hidden="true">/</span>
+      <span>签约金管理</span><span class="separator" aria-hidden="true">/</span>
+      <span class="current" aria-current="page">签约金台账</span>
+    </nav>
+
+    <section class="ledger-panel" aria-labelledby="list-title">
+      <div class="list-region">
+        <h2 class="section-heading" id="list-title">签约金列表</h2>
+        <form class="search-form" id="search-form">
+          <label for="employee-name">姓名:</label>
+          <input class="name-input" id="employee-name" name="name" type="text" autocomplete="off">
+          <button class="search-button" type="submit">搜索</button>
+        </form>
+
+        <div class="grid">
+          <div class="grid-toolbar">
+            <button class="export-button" id="export-button" type="button" aria-label="导出签约金列表" title="导出签约金列表"><svg class="icon" aria-hidden="true"><use href="#export-grid"/></svg></button>
+            <div class="pager" aria-label="分页">
+              <button class="pager-button" type="button" aria-label="首页" disabled><svg class="icon" aria-hidden="true"><use href="#first"/></svg></button>
+              <button class="pager-button" type="button" aria-label="上一页" disabled><svg class="icon" aria-hidden="true"><use href="#previous"/></svg></button>
+              <select class="page-range" id="page-range" aria-label="当前记录范围" disabled><option>1-3/3</option></select>
+              <button class="pager-button next" type="button" aria-label="下一页" disabled><svg class="icon" aria-hidden="true"><use href="#previous"/></svg></button>
+              <button class="pager-button last" type="button" aria-label="末页" disabled><svg class="icon" aria-hidden="true"><use href="#first"/></svg></button>
+            </div>
+          </div>
+          <div class="table-scroll" role="region" aria-label="签约金列表，可横向滚动" tabindex="0">
+            <table class="ledger-table">
+              <caption class="sr-only">签约金列表</caption>
+              <colgroup>
+                <col style="width:64px"><col style="width:56px">
+                <col style="width:86px"><col style="width:190px"><col style="width:84px">
+                <col style="width:96px"><col style="width:120px"><col style="width:82px">
+                <col style="width:120px"><col style="width:96px"><col style="width:120px"><col style="width:80px">
+              </colgroup>
+              <thead><tr>
+                <th scope="col">员工 ID</th><th scope="col">姓名</th>
+                <th scope="col">入职日期</th><th scope="col">部门名称</th><th scope="col">发放周期</th>
+                <th scope="col" class="payout-schedule">发放期次</th><th scope="col">签约金总额<span class="tax-note">（税前）</span></th><th scope="col">预发放金额</th>
+                <th scope="col">已计税金额<span class="tax-note">（税前）</span></th><th scope="col">实际个税累计</th>
+                <th scope="col">状态</th><th scope="col">详情</th>
+              </tr></thead>
+              <tbody id="ledger-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <hr class="bottom-rule">
+        <p class="sr-only" id="result-announcement" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="record-dialog" id="record-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-heading"><span id="dialog-title"></span><button class="dialog-close" type="button" aria-label="关闭">×</button></div>
+    <div class="dialog-body" id="dialog-body"></div>
+  </dialog>
+
+  <template id="ledger-detail-template">
+    <div class="table-scroll ledger-detail-scroll" role="region" aria-label="台账明细，可横向滚动" tabindex="0">
+      <table class="ledger-table ledger-detail-table">
+        <caption class="sr-only">台账明细</caption>
+        <colgroup>
+          <col style="width:80px"><col style="width:80px"><col style="width:100px">
+          <col style="width:190px"><col style="width:100px"><col style="width:120px">
+          <col style="width:120px"><col style="width:120px"><col style="width:110px">
+        </colgroup>
+        <thead><tr>
+          <th scope="col">工号</th><th scope="col">姓名</th><th scope="col">入职时间</th>
+          <th scope="col">部门</th><th scope="col">工资期属</th><th scope="col">税前签约金</th>
+          <th scope="col">税后签约金</th><th scope="col">签约金扣回</th><th scope="col">签约金个税</th>
+        </tr></thead>
+        <tbody class="ledger-detail-body"></tbody>
+      </table>
+    </div>
+  </template>
+
+  <template id="tax-editor-template">
+    <form class="tax-editor-form" novalidate>
+      <p class="tax-editor-note">保存后，实际个税累计将按以下各期金额重新汇总。</p>
+      <div class="tax-editor-scroll" role="region" aria-label="签约金个税维护，可上下滚动" tabindex="0">
+        <table class="ledger-table tax-editor-table">
+          <caption class="sr-only">签约金个税维护</caption>
+          <colgroup><col style="width:44%"><col style="width:56%"></colgroup>
+          <thead><tr><th scope="col">工资期属</th><th scope="col">签约金个税</th></tr></thead>
+          <tbody class="tax-editor-body"></tbody>
+        </table>
+      </div>
+      <p class="tax-editor-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="dialog-button tax-editor-cancel" type="button">取消</button>
+        <button class="dialog-button primary" type="submit">保存</button>
+      </div>
+    </form>
+  </template>
+
+  <script>
+    (() => {
+      // 页面示例数据，尚未提供的金额字段保留空值。
+      const records = [
+        // 第一、二条按《签约金台账模版_测算.xlsx》“每月明细5w”E35:G37、W35:W37的期序金额对应现有期属。
+        { id: 'april', employeeId: '126001', name: '张明远', entryDate: '2026/04/01', department: '二级部门名称/三级部门名称/四级部门名称...', period: '2026年04月', payoutSchedule: '第1期/共1期', grossTotal: 1000000, prepaid: 650000, taxedGross: 290410.96, actualTaxTotal: 76896.21, taxStart: [2026, 9], taxRevision: 2, initialTaxCents: [6088560, 1601061], status: '预发完成', ledgerEntries: [
+          { payrollPeriod: '2026M9', grossBonus: 249315.07, bonusDeduction: -162054.79 },
+          { payrollPeriod: '2026M10', grossBonus: 41095.89, bonusDeduction: -26712.33 }
+        ] },
+        { id: 'march', employeeId: '126002', name: '李晓宁', entryDate: '2026/03/02', department: '二级部门名称/三级部门名称/四级部门名称...', period: '2026年03月', payoutSchedule: '第1期/共1期', grossTotal: 1000000, prepaid: 650000, taxedGross: 332876.71, actualTaxTotal: 93317.78, taxStart: [2026, 8], taxRevision: 2, initialTaxCents: [6088560, 1601061, 1642157], status: '预发完成', ledgerEntries: [
+          { payrollPeriod: '2026M8', grossBonus: 249315.07, bonusDeduction: -162054.79 },
+          { payrollPeriod: '2026M9', grossBonus: 41095.89, bonusDeduction: -26712.33 },
+          { payrollPeriod: '2026M10', grossBonus: 42465.75, bonusDeduction: -27602.74 }
+        ] },
+        // 第三条对应测算表2026M5至2026M10的六期（E35:G40、W35:W40）。
+        { id: 'departed', employeeId: '126003', name: '陈嘉宁', entryDate: '2025/12/10', department: '二级部门名称/三级部门名称/四级部门名称...', period: '2026年05月', payoutSchedule: '第1期/共1期', grossTotal: 1000000, prepaid: 650000, taxedGross: 458904.1, actualTaxTotal: 147116.74, taxStart: [2026, 5], previousTaxStart: [2026, 7], taxRevision: 2, initialTaxCents: [6088560, 1601061, 1642157, 1718869, 1806541, 1854486], status: '已离职，有返还', departureDate: '2026/10/31', departureReturn: 338212.64, ledgerEntries: [
+          { payrollPeriod: '2026M5', grossBonus: 249315.07, bonusDeduction: -162054.79 },
+          { payrollPeriod: '2026M6', grossBonus: 41095.89, bonusDeduction: -26712.33 },
+          { payrollPeriod: '2026M7', grossBonus: 42465.75, bonusDeduction: -27602.74 },
+          { payrollPeriod: '2026M8', grossBonus: 42465.75, bonusDeduction: -27602.74 },
+          { payrollPeriod: '2026M9', grossBonus: 41095.89, bonusDeduction: -26712.33 },
+          { payrollPeriod: '2026M10', grossBonus: 42465.75, bonusDeduction: -27602.74 }
+        ] }
+      ];
+      const columns = [
+        ['employeeId', '员工 ID'], ['name', '姓名'],
+        ['entryDate', '入职日期'], ['department', '部门名称'], ['period', '发放周期'],
+        ['payoutSchedule', '发放期次'], ['grossTotal', '签约金总额（税前）'], ['prepaid', '预发放金额'],
+        ['taxedGross', '已计税金额（税前）'], ['actualTaxTotal', '实际个税累计'], ['status', '状态']
+      ];
+      const detailFields = ['employeeId', 'name', 'entryDate', 'department', 'payrollPeriod', 'grossBonus', 'netBonus', 'bonusDeduction', 'bonusTax'];
+      const moneyFields = new Set(['grossTotal', 'prepaid', 'taxedGross', 'actualTaxTotal', 'departureReturn', 'grossBonus', 'netBonus', 'bonusDeduction', 'bonusTax']);
+      const body = document.getElementById('ledger-body');
+      const nameInput = document.getElementById('employee-name');
+      const exportButton = document.getElementById('export-button');
+      const range = document.getElementById('page-range');
+      const dialog = document.getElementById('record-dialog');
+      let visibleRecords = records.slice();
+
+      function formatValue(record, key) {
+        const value = record[key];
+        if (value === null || value === undefined || value === '') return '—';
+        return moneyFields.has(key) ? Number(value).toLocaleString('zh-CN', { minimumFractionDigits: ['grossTotal', 'prepaid'].includes(key) ? 0 : 2, maximumFractionDigits: 2 }) : String(value);
+      }
+
+      function makeAction(text, action, id) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'table-action';
+        button.textContent = text;
+        button.dataset.action = action;
+        button.dataset.recordId = id;
+        button.setAttribute('aria-haspopup', 'dialog');
+        return button;
+      }
+
+      function renderDepartment(cell, value) {
+        cell.className = 'department';
+        cell.replaceChildren();
+        const levels = value.split('/');
+        levels.forEach((level, index) => {
+          const part = document.createElement('span');
+          part.className = 'department-level';
+          part.textContent = level + (index < levels.length - 1 ? '/' : '');
+          cell.append(part);
+          if (index < levels.length - 1) cell.append(document.createElement('wbr'));
+        });
+      }
+
+      function generateTaxEntries([year, month]) {
+        const firstMonth = year * 12 + month - 1;
+        return Array.from({ length: 19 }, (_, index) => {
+          const currentMonth = firstMonth + index;
+          return { payrollPeriod: `${Math.floor(currentMonth / 12)}M${currentMonth % 12 + 1}`, taxCents: null };
+        });
+      }
+
+      function taxStorageKey(record, start = record.taxStart) {
+        return `signing-bonus-ledger:tax:v${record.taxRevision ?? 1}:${record.employeeId}:${start.join('-')}`;
+      }
+
+      function taxTotal(entries) {
+        let totalCents = 0;
+        for (const entry of entries) {
+          totalCents += entry.taxCents ?? 0;
+          if (!Number.isSafeInteger(totalCents)) throw new Error('累计金额超出可保存范围，请检查各期金额。');
+        }
+        return entries.some(entry => entry.taxCents !== null) ? totalCents / 100 : null;
+      }
+
+      function loadTaxEntries(record) {
+        record.taxEntries = generateTaxEntries(record.taxStart).map((entry, index) => ({ ...entry, taxCents: record.initialTaxCents?.[index] ?? null }));
+        for (const start of [record.taxStart, record.previousTaxStart]) {
+          if (!start) continue;
+          try {
+            const saved = JSON.parse(localStorage.getItem(taxStorageKey(record, start)));
+            const expected = generateTaxEntries(start);
+            if (!Array.isArray(saved) || saved.length !== expected.length) continue;
+            if (!saved.every((entry, index) => entry && entry.payrollPeriod === expected[index].payrollPeriod && (entry.taxCents === null || Number.isSafeInteger(entry.taxCents)))) continue;
+            const entries = record.taxEntries.map((entry, index) => ({ ...entry, taxCents: saved[index].taxCents }));
+            const total = taxTotal(entries);
+            record.taxEntries = entries;
+            record.actualTaxTotal = total;
+            if (start !== record.taxStart) {
+              try {
+                // 期属修正时按期序保留已有金额，同时保留旧数据作为备份。
+                localStorage.setItem(taxStorageKey(record), JSON.stringify(entries));
+              } catch {
+                // 无法写入时仍展示已恢复的数据，下次打开可继续从旧数据读取。
+              }
+            }
+            return;
+          } catch {
+            // 无有效的本地维护数据时，保留原有累计金额，并尝试旧版期属数据。
+          }
+        }
+      }
+
+      function parseTaxAmount(value) {
+        const text = value.trim();
+        if (!text) return null;
+        if (!/^-?\d+(?:\.\d{1,2})?$/.test(text)) throw new Error('请输入有效金额，最多保留两位小数。');
+        const [whole, fraction = ''] = text.replace(/^-/, '').split('.');
+        const cents = (Number(whole) * 100 + Number(fraction.padEnd(2, '0'))) * (text.startsWith('-') ? -1 : 1);
+        if (!Number.isSafeInteger(cents)) throw new Error('金额超出可保存范围，请重新填写。');
+        return cents;
+      }
+
+      function renderTaxEditor(record) {
+        const fragment = document.getElementById('tax-editor-template').content.cloneNode(true);
+        const form = fragment.querySelector('form');
+        const taxBody = form.querySelector('.tax-editor-body');
+        const errorMessage = form.querySelector('.tax-editor-error');
+        const inputs = record.taxEntries.map(entry => {
+          const row = document.createElement('tr');
+          const periodCell = document.createElement('td');
+          periodCell.textContent = entry.payrollPeriod;
+          const amountCell = document.createElement('td');
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.inputMode = 'decimal';
+          input.autocomplete = 'off';
+          input.className = 'tax-amount-input';
+          input.name = entry.payrollPeriod;
+          input.setAttribute('aria-label', `${entry.payrollPeriod} 签约金个税`);
+          input.value = entry.taxCents === null ? '' : (entry.taxCents / 100).toFixed(2);
+          input.addEventListener('input', () => {
+            input.setCustomValidity('');
+            errorMessage.hidden = true;
+          });
+          amountCell.append(input);
+          row.append(periodCell, amountCell);
+          taxBody.append(row);
+          return input;
+        });
+        form.querySelector('.tax-editor-cancel').addEventListener('click', () => dialog.close());
+        form.addEventListener('submit', event => {
+          event.preventDefault();
+          errorMessage.hidden = true;
+          const entries = [];
+          for (let index = 0; index < inputs.length; index++) {
+            const input = inputs[index];
+            try {
+              entries.push({ payrollPeriod: record.taxEntries[index].payrollPeriod, taxCents: parseTaxAmount(input.value) });
+            } catch (error) {
+              input.setCustomValidity(error.message);
+              input.reportValidity();
+              input.focus();
+              return;
+            }
+          }
+          if (entries.every((entry, index) => entry.taxCents === record.taxEntries[index].taxCents)) {
+            dialog.close();
+            return;
+          }
+          let total;
+          try {
+            total = taxTotal(entries);
+          } catch (error) {
+            errorMessage.textContent = error.message;
+            errorMessage.hidden = false;
+            return;
+          }
+          try {
+            localStorage.setItem(taxStorageKey(record), JSON.stringify(entries));
+          } catch {
+            errorMessage.textContent = '保存失败，浏览器无法保存数据。请稍后重试。';
+            errorMessage.hidden = false;
+            return;
+          }
+          record.taxEntries = entries;
+          record.actualTaxTotal = total;
+          dialog.close();
+          renderRows();
+          body.querySelector(`[data-action="tax-editor"][data-record-id="${record.id}"]`)?.focus();
+        });
+        return fragment;
+      }
+
+      function renderLedgerDetails(record) {
+        const fragment = document.getElementById('ledger-detail-template').content.cloneNode(true);
+        const detailBody = fragment.querySelector('.ledger-detail-body');
+        record.ledgerEntries.forEach(entry => {
+          const row = document.createElement('tr');
+          const taxCents = record.taxEntries.find(tax => tax.payrollPeriod === entry.payrollPeriod)?.taxCents ?? null;
+          const values = {
+            ...entry,
+            bonusTax: taxCents === null ? null : taxCents / 100,
+            netBonus: taxCents === null ? null : (Math.round(entry.grossBonus * 100) - taxCents) / 100,
+            employeeId: record.employeeId,
+            name: record.name,
+            entryDate: record.entryDate,
+            department: record.department
+          };
+          detailFields.forEach(key => {
+            const cell = document.createElement('td');
+            cell.textContent = formatValue(values, key);
+            cell.className = moneyFields.has(key) ? 'amount' : key === 'department' ? 'department' : 'nowrap';
+            if (key === 'department') renderDepartment(cell, formatValue(values, key));
+            row.append(cell);
+          });
+          detailBody.append(row);
+        });
+        if (!record.ledgerEntries.length) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = detailFields.length;
+          cell.className = 'empty-state';
+          cell.textContent = '暂无台账明细';
+          row.append(cell);
+          detailBody.append(row);
+        }
+        return fragment;
+      }
+
+      function renderRows() {
+        body.replaceChildren();
+        visibleRecords.forEach(record => {
+          const row = document.createElement('tr');
+          row.dataset.recordId = record.id;
+          columns.forEach(([key]) => {
+            const cell = document.createElement('td');
+            cell.textContent = formatValue(record, key);
+            if (key === 'status' && record.status === '已离职，有返还') {
+              cell.replaceChildren(makeAction(record.status, 'departure-details', record.id));
+            }
+            if (key === 'actualTaxTotal') {
+              const edit = makeAction(formatValue(record, key), 'tax-editor', record.id);
+              edit.classList.add('tax-edit-action');
+              edit.title = '编辑各期签约金个税';
+              edit.setAttribute('aria-label', `${record.name}：编辑实际个税累计 ${formatValue(record, key)}`);
+              cell.replaceChildren(edit);
+            }
+            if (moneyFields.has(key)) cell.className = 'amount';
+            else if (key === 'payoutSchedule') cell.className = 'payout-schedule';
+            else if (key === 'department') {
+              renderDepartment(cell, formatValue(record, key));
+            } else if (key !== 'status') cell.className = 'nowrap';
+            row.append(cell);
+          });
+          const actions = document.createElement('td');
+          actions.className = 'action-cell';
+          const actionLinks = document.createElement('div');
+          actionLinks.className = 'detail-actions';
+          actionLinks.append(makeAction('查看协议', 'agreement', record.id), makeAction('台账明细', 'ledger-details', record.id));
+          actions.append(actionLinks);
+          row.append(actions);
+          body.append(row);
+        });
+        if (!visibleRecords.length) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = columns.length + 1;
+          cell.className = 'empty-state';
+          cell.textContent = '暂无数据';
+          row.append(cell);
+          body.append(row);
+        }
+        range.options[0].textContent = visibleRecords.length ? `1-${visibleRecords.length}/${visibleRecords.length}` : '0-0/0';
+        exportButton.disabled = !visibleRecords.length;
+        document.getElementById('result-announcement').textContent = `共${visibleRecords.length}条记录`;
+      }
+
+      document.getElementById('search-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const query = nameInput.value.trim().toLocaleLowerCase('zh-CN');
+        visibleRecords = records.filter(record => record.name.toLocaleLowerCase('zh-CN').includes(query));
+        renderRows();
+      });
+
+      body.addEventListener('click', event => {
+        const button = event.target.closest('[data-action]');
+        if (!button) return;
+        const record = records.find(item => item.id === button.dataset.recordId);
+        if (!record) return;
+        const action = button.dataset.action;
+        const isLedgerDetail = action === 'ledger-details';
+        if (!['ledger-details', 'departure-details', 'agreement', 'tax-editor'].includes(action)) return;
+        const content = document.getElementById('dialog-body');
+        content.replaceChildren();
+        dialog.classList.toggle('ledger-detail-dialog', isLedgerDetail);
+        if (action === 'tax-editor') {
+          document.getElementById('dialog-title').textContent = `签约金个税维护 · ${record.name}（${record.employeeId}）`;
+          content.append(renderTaxEditor(record));
+        } else if (isLedgerDetail) {
+          document.getElementById('dialog-title').textContent = `台账明细 · ${record.name}（${record.employeeId}）`;
+          content.append(renderLedgerDetails(record));
+        } else if (action === 'departure-details') {
+          document.getElementById('dialog-title').textContent = `离职返还 · ${record.name}（${record.employeeId}）`;
+          const fields = document.createElement('dl');
+          fields.className = 'departure-fields';
+          [['departureDate', '离职日期'], ['departureReturn', '离职返还金额']].forEach(([key, label]) => {
+            const term = document.createElement('dt');
+            term.textContent = label;
+            const value = document.createElement('dd');
+            value.textContent = formatValue(record, key);
+            fields.append(term, value);
+          });
+          content.append(fields);
+        } else {
+          document.getElementById('dialog-title').textContent = '查看协议';
+          const message = document.createElement('p');
+          message.className = 'agreement-empty';
+          message.textContent = '暂无可查看的协议文件。';
+          content.append(message);
+        }
+        dialog.showModal();
+      });
+
+      dialog.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', event => {
+        if (event.target !== dialog) return;
+        const bounds = dialog.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+      });
+
+      exportButton.addEventListener('click', () => {
+        const quote = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+        const content = [columns.map(([, title]) => quote(title)).join(','), ...visibleRecords.map(record => columns.map(([key]) => quote(record[key])).join(','))].join('\r\n');
+        const url = URL.createObjectURL(new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8;' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = '签约金台账.csv';
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+
+      records.forEach(loadTaxEntries);
+      renderRows();
+    })();
+  </script>
+</body>
+</html>
