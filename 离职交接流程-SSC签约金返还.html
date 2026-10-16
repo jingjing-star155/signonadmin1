@@ -43,21 +43,10 @@
     .security .fields { padding-top: 18px; padding-bottom: 0; }
     .ssc .section-title { padding-top: 4px; }
     .ssc-note { margin: 16px 4%; color: #8b571e; font-size: 13px; line-height: 1.5; }
-    .ssc-fields { padding-top: 0; padding-bottom: 0; }
-    .ssc-fields .field { grid-template-columns: 170px minmax(0, 1fr); }
-    .required { color: #b22e2e; margin-right: 4px; }
-    .money-control { display: flex; align-items: center; gap: 10px; }
-    .money-control input { width: 220px; }
-    .money-control span { color: #555; }
-    .field input[aria-invalid="true"] { border-color: #ba3636; }
-    .amount-error, .action-feedback { grid-column: 2; margin: 0; font-size: 12px; line-height: 1.5; }
-    .amount-error { color: #b22e2e; }
-    .action-feedback { color: #51735f; }
     .finance, .card-handover, .loan-handover { margin-top: 30px; margin-bottom: 30px; }
     .finance .field, .card-handover .field, .loan-handover .field { grid-template-columns: 170px minmax(0, 1fr); }
     .finance .right-field, .card-handover .right-field { max-width: 400px; }
     .field.row-right { grid-column: 2; }
-    #finance-return .fields { padding-top: 0; }
     .approval-panel { margin: 60px 4% 0; padding: 24px; border: 1px solid #ccc; }
     .approval-panel summary { cursor: pointer; color: #a75a12; font-weight: 700; line-height: 1.5; }
     .approval-panel summary::marker { color: #666; }
@@ -76,7 +65,7 @@
       .field.right-field { max-width: none; }
       .process-meta { padding: 28px 20px; }
       .process-meta p:last-child { margin-right: 0; }
-      .ssc-fields .field, .finance .field { grid-template-columns: 170px minmax(0, 1fr); }
+      .finance .field { grid-template-columns: 170px minmax(0, 1fr); }
       .ssc-note { margin-left: 22px; margin-right: 22px; }
       .section-body { padding-left: 22px; padding-right: 22px; }
       .check-list { padding-left: 30px; }
@@ -90,16 +79,13 @@
       .process-meta { padding: 24px 4px 28px; gap: 12px; }
       .section-title { font-size: 14px; }
       .fields { grid-template-columns: 1fr; padding-left: 0; padding-right: 0; gap: 14px; }
-      .field, .ssc-fields .field, .finance .field, .card-handover .field, .loan-handover .field { grid-template-columns: 132px minmax(0, 1fr); gap: 6px; }
+      .field, .finance .field, .card-handover .field, .loan-handover .field { grid-template-columns: 132px minmax(0, 1fr); gap: 6px; }
       .finance .right-field, .card-handover .right-field { max-width: none; }
       .field.row-right { grid-column: auto; }
       .field input, .field select { width: 100%; font-size: 13px; }
       .section-body { padding: 18px 10px 0; }
       .check-list { padding: 22px 18px 0; }
       .ssc-note { margin: 16px 10px; font-size: 13px; }
-      .ssc-fields { padding-top: 0; }
-      .money-control { gap: 6px; }
-      .money-control input { flex: 1; width: 100%; }
       .approval-panel { margin: 32px 0 0; padding: 16px; }
       .approval-actions { flex-wrap: wrap; margin-top: 24px; padding-right: 0; }
       .approval-feedback { flex-basis: 100%; }
@@ -140,17 +126,7 @@
       </section>
       <section class="section ssc" id="ssc-handover" aria-labelledby="ssc-title">
         <h2 class="section-title" id="ssc-title">SSC交接</h2>
-        <p class="ssc-note" id="ssc-note">该员工需返还签约金。</p>
-        <form id="ssc-form" novalidate>
-          <div class="fields ssc-fields">
-            <div class="field full">
-              <label for="signing-bonus-return-amount"><span class="required" aria-hidden="true">*</span>签约金返还金额：</label>
-              <div class="money-control"><input id="signing-bonus-return-amount" name="signingBonusReturnAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="请输入返还金额" required aria-describedby="amount-error"><span>元</span></div>
-              <p class="amount-error" id="amount-error" role="alert" hidden></p>
-              <p class="action-feedback" id="ssc-feedback" role="status" aria-live="polite" hidden></p>
-            </div>
-          </div>
-        </form>
+        <p class="ssc-note" id="ssc-note">此员工有待返还的签约金，请确认是否返还。</p>
       </section>
       <section class="section legal" aria-labelledby="legal-title">
         <h2 class="section-title" id="legal-title">法务</h2>
@@ -171,12 +147,6 @@
           <div class="field"><label for="finance-process-handover">流程交接：</label><select id="finance-process-handover" data-finance-field><option value=""></option><option value="completed">已交接</option><option value="none">无需交接</option><option value="pending">未交接</option></select></div>
           <div class="field right-field"><label for="social-security-prepayment">社保预缴：</label><select id="social-security-prepayment" data-finance-field><option value=""></option><option value="paid">已缴清</option><option value="none">无需预缴</option><option value="pending">未缴清</option></select></div>
           <div class="field right-field row-right"><label for="social-security-debt">社保欠款合计：</label><input class="amount-display" id="social-security-debt" value="8000.00" readonly></div>
-        </div>
-        <div id="finance-return">
-          <div class="fields">
-            <div class="field"><label for="finance-return-amount">签约金返还金额：</label><div class="money-control"><input class="amount-display" id="finance-return-amount" readonly><span>元</span></div></div>
-            <div class="field right-field"><label for="finance-return-status"><span class="required" aria-hidden="true">*</span>签约金返还确认：</label><select id="finance-return-status"><option value="" disabled hidden>请选择</option><option value="returned">已返还</option></select></div>
-          </div>
         </div>
       </section>
       <section class="section card-handover" aria-labelledby="card-title">
@@ -206,10 +176,6 @@
   <script>
     (() => {
       const byId = (id) => document.getElementById(id);
-      const amountInput = byId('signing-bonus-return-amount');
-      const feedback = byId('ssc-feedback');
-      const errorMessage = byId('amount-error');
-      const financeConfirmation = byId('finance-return-status');
       const financeFields = [...document.querySelectorAll('[data-finance-field]')];
       // 原型展示需返还场景；是否需要返还和当前处理人角色由业务系统提供。
       let context = { flowId: '12345', employeeId: '128889', actorRole: 'ssc', requiresReturn: true };
@@ -221,43 +187,21 @@
         return 'ssc-signing-bonus-handover:' + JSON.stringify([context.flowId, context.employeeId]);
       }
 
-      function amountError(value) {
-        if (!value) return '请录入签约金返还金额。';
-        if (!/^\d+(\.\d{1,2})?$/.test(value)) return '请输入有效金额，最多保留两位小数。';
-        const [integer, fraction = ''] = value.split('.');
-        const cents = Number(integer) * 100 + Number(fraction.padEnd(2, '0'));
-        if (!Number.isSafeInteger(cents)) return '金额过大，请核对后重新录入。';
-        if (cents <= 0) return '需返还签约金时，返还金额必须大于 0。';
-        return '';
-      }
-
-      function showError(message) {
-        errorMessage.textContent = message;
-        errorMessage.hidden = !message;
-        amountInput.setAttribute('aria-invalid', String(Boolean(message)));
-        if (message) showFeedback('');
-      }
-
-      function showFeedback(message) {
-        feedback.textContent = message;
-        feedback.hidden = !message;
-      }
-
       function loadHandover() {
         handover = emptyHandover();
+        storageUnavailable = false;
         try {
           const saved = JSON.parse(localStorage.getItem(storageKey()));
-          if (saved && ['pending', 'draft', 'submitted'].includes(saved.status) && typeof saved.amount === 'string' && (!saved.amount || !amountError(saved.amount)) && (saved.status !== 'submitted' || saved.amount)) {
-            handover = { ...emptyHandover(), status: saved.status, amount: saved.amount,
+          if (saved && ['pending', 'draft', 'submitted'].includes(saved.status)) {
+            // 兼容保留旧示例中的金额和返还确认记录，不再展示或作为财务审批条件。
+            handover = { ...emptyHandover(), status: saved.status, amount: typeof saved.amount === 'string' ? saved.amount : '',
               financeConfirmation: saved.financeConfirmation === 'returned' ? 'returned' : '',
-              financeApproved: saved.financeApproved === true && (!context.requiresReturn || saved.status === 'submitted' && saved.financeConfirmation === 'returned'),
+              financeApproved: saved.financeApproved === true && (!context.requiresReturn || saved.status === 'submitted'),
               approvalOpinion: typeof saved.approvalOpinion === 'string' ? saved.approvalOpinion : '',
               housingLoanPrincipal: ['repaid', 'none', 'pending'].includes(saved.housingLoanPrincipal) ? saved.housingLoanPrincipal : '',
               financeFields: saved.financeFields && typeof saved.financeFields === 'object' ? saved.financeFields : {} };
           }
         } catch { storageUnavailable = true; }
-        amountInput.value = handover.amount;
-        financeConfirmation.value = handover.financeConfirmation;
         byId('approval-opinion').value = handover.approvalOpinion;
         byId('housing-loan-principal').value = handover.housingLoanPrincipal;
         for (const field of financeFields) field.value = typeof handover.financeFields[field.id] === 'string' ? handover.financeFields[field.id] : '';
@@ -276,20 +220,10 @@
 
       function render() {
         const submitted = handover.status === 'submitted';
-        const editable = context.requiresReturn && context.actorRole === 'ssc' && !submitted;
-        amountInput.value = handover.amount;
         byId('flow-id').textContent = context.flowId;
         byId('employee-id').value = context.employeeId;
         byId('ssc-handover').hidden = !context.requiresReturn;
-        byId('finance-return').hidden = !context.requiresReturn;
-        amountInput.disabled = !context.requiresReturn;
-        amountInput.required = context.requiresReturn;
-        amountInput.readOnly = !editable;
-        byId('ssc-note').textContent = submitted ? 'SSC 已提交签约金返还金额，请财务核对返还情况。' : '该员工需返还签约金。';
         byId('approval-status').textContent = context.requiresReturn && submitted || handover.financeApproved ? '交接中' : '已保存';
-        byId('finance-return-amount').value = submitted ? handover.amount : '';
-        financeConfirmation.required = context.requiresReturn;
-        financeConfirmation.disabled = !context.requiresReturn || context.actorRole !== 'finance' || !submitted || handover.financeApproved;
         for (const field of financeFields) field.disabled = context.actorRole !== 'finance' || handover.financeApproved;
         const nodePassed = context.actorRole === 'ssc' ? submitted : context.actorRole === 'finance' ? handover.financeApproved : false;
         byId('approve-handover').disabled = nodePassed;
@@ -298,21 +232,14 @@
 
       function completeHandover(submit) {
         if (!context.requiresReturn || context.actorRole !== 'ssc' || handover.status === 'submitted') return false;
-        const rawAmount = amountInput.value.trim();
-        const error = rawAmount || submit ? amountError(rawAmount) : '';
-        showError(error);
-        if (error) { amountInput.focus(); return false; }
-        const [integer, fraction = ''] = rawAmount.split('.');
-        const amount = rawAmount ? String(Number(integer)) + '.' + fraction.padEnd(2, '0') : '';
-        const nextHandover = { ...handover, amount, status: submit ? 'submitted' : 'draft', approvalOpinion: byId('approval-opinion').value, housingLoanPrincipal: byId('housing-loan-principal').value };
+        const nextHandover = { ...handover, status: submit ? 'submitted' : 'draft', approvalOpinion: byId('approval-opinion').value, housingLoanPrincipal: byId('housing-loan-principal').value };
         if (!persist(nextHandover)) {
-          showFeedback('当前浏览器无法保存，请允许本地存储后重试。');
+          approvalFeedback('当前浏览器无法保存，请允许本地存储后重试。', true);
           return false;
         }
         handover = nextHandover;
-        amountInput.value = amount;
         render();
-        showFeedback(submit ? 'SSC 交接已提交，返还金额已传至财务。' : '已保存，尚未提交 SSC 交接。');
+        approvalFeedback(submit ? 'SSC交接已通过。' : '已保存，尚未通过 SSC 交接。');
         return true;
       }
 
@@ -326,15 +253,13 @@
       function approveHandover() {
         approvalFeedback('');
         if (context.actorRole === 'ssc' && context.requiresReturn) {
-          if (completeHandover(true)) { showFeedback(''); approvalFeedback('SSC交接已通过。'); }
+          completeHandover(true);
           return;
         }
         if (context.actorRole === 'finance') {
           if (handover.financeApproved) return;
           if (context.requiresReturn && handover.status !== 'submitted') { approvalFeedback('请先完成 SSC 交接。', true); return; }
-          if (context.requiresReturn && financeConfirmation.value !== 'returned') { approvalFeedback('请核对签约金返还情况，确认已返还后通过。', true); financeConfirmation.focus(); return; }
           const nextHandover = { ...handover,
-            financeConfirmation: context.requiresReturn ? financeConfirmation.value : '',
             financeApproved: true,
             approvalOpinion: byId('approval-opinion').value,
             housingLoanPrincipal: byId('housing-loan-principal').value,
@@ -348,10 +273,7 @@
         approvalFeedback('当前交接内容已填写，审批由对应处理人办理。');
       }
 
-      amountInput.addEventListener('input', () => { showError(''); showFeedback(''); });
-      byId('ssc-form').addEventListener('submit', (event) => { event.preventDefault(); completeHandover(true); });
       byId('approve-handover').addEventListener('click', approveHandover);
-      financeConfirmation.addEventListener('change', () => approvalFeedback(''));
 
       // 按流程编号和员工ID隔离草稿；正式接入时以服务端权限及流程状态为准。
       function setContext(data) {
@@ -360,9 +282,7 @@
         const returnChanged = Boolean(next.requiresReturn) !== context.requiresReturn;
         context = { flowId: String(next.flowId), employeeId: String(next.employeeId), actorRole: String(next.actorRole).toLowerCase(), requiresReturn: Boolean(next.requiresReturn) };
         if (identityChanged || returnChanged) loadHandover();
-        showError('');
-        showFeedback(storageUnavailable ? '当前浏览器无法读取本地保存记录。' : '');
-        approvalFeedback('');
+        approvalFeedback(storageUnavailable ? '当前浏览器无法读取本地保存记录。' : '', storageUnavailable);
         render();
       }
 
@@ -379,7 +299,7 @@
           requiresReturn: context.requiresReturn,
           sscHandoverStatus: context.requiresReturn ? handover.status : 'skipped',
           signingBonusReturnAmount: context.requiresReturn ? handover.amount : null,
-          financeReturnStatus: context.requiresReturn ? handover.financeApproved ? 'confirmed' : handover.status === 'submitted' ? 'pending' : 'waiting_for_ssc' : 'not_applicable'
+          financeHandoverStatus: handover.financeApproved ? 'approved' : context.requiresReturn && handover.status !== 'submitted' ? 'waiting_for_ssc' : 'pending'
         })
       });
       loadHandover();
